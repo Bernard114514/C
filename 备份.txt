@@ -1,0 +1,163 @@
+#include <stdio.h>
+#define MAX 1024
+/*
+如果要在 VS Code 环境外使用, 编译时请选择: Saving With Code -> GBK
+保存源代码前请选择: Saving With Code -> UTF-8
+
+题目0: 
+使用 fgets 函数（使用文档 -> 传送门）读取用户输入的字符串（英文），并用指针法来计算字符串的字符个数。
+请自行观察你当前系统对中文字符的处理方式，并设计一个可以统计中文字符以及中英文混合字符的程序。
+
+题目1:
+自定义拷贝字符串 —— 仿造 strcpy 和 strncpy 函数
+实现 strncpy 函数，让用户输入需要拷贝的字符个数（注意：该程序需要能够正确拷贝中英混合的字符串）。
+
+
+由于编码问题,该方法仅在gbk编码下有效
+*/
+
+/* 
+-------------------------------函数声明区-------------------------------
+ */
+int arryCounter_GBK(char str[MAX]);
+int arryCounter_8bit(char str[MAX]);
+char *copystr(char str1[MAX], char str2[MAX], int length);
+char *filter_fgets_str(char *str); //用于去除多获取的回车
+
+
+/* 
+-------------------------------主函数区-------------------------------
+ */
+int main() 
+{
+    char str[MAX], str1[MAX], str2[MAX], *pstr, *pstr2;
+    int countNum = 0, length = 0;
+    printf("请输入一个字符串:");
+    fgets (str, MAX, stdin);
+    filter_fgets_str(str);
+    printf("你输入的字符串是:\n%s\n", str);
+    countNum = arryCounter_GBK(str);
+    printf("您总共输入了 %d 个字符\n", countNum);
+
+    printf("请输入一个字符串到 str1 中:");
+    fgets (str1, MAX, stdin);
+    filter_fgets_str(str1);
+    printf("你输入的字符串是:\n%s\n", str1);
+    printf("请输入需要拷贝的字符个数:");
+    scanf("%d", &length);
+    copystr(str1, str2, length);
+    printf("拷贝完毕! 现在str2中的内容是:%s\n", str2);
+
+    getchar();
+    return 0;
+}
+
+ 
+/* 
+-------------------------------自定义函数区-------------------------------
+*/
+
+
+//计算数组中包括gbk字符和回车的总元素个数
+int arryCounter_GBK(char str[MAX])
+{
+    char *pstr;
+    int countNum = 0;
+    pstr = str; //将 指针 指向 数组
+
+    for (int i = 0, gbk = 0, flag = 0; flag == 0;)
+    {
+        if (*(pstr + i) != '\0')
+        {
+            // printf("DEBUG: item = %d\n", *(pstr + i));
+            //由于gbk二进制码开头为1,因此用int类来比较的话其值小于0(详情参见C语言保存负数的基本知识),用此特性判断值是否是gbk编码的汉字
+            if ( (int)*(pstr + i) < 0) 
+            {
+                gbk++; //由于gbk编码汉字由2个8位1开头的二进制编码构成，因此根据逻辑判断该值一定为偶数，因此gbk/2即为其中的汉字个数
+            }
+            i++;
+        }
+        else
+        {
+            countNum = i - gbk/2; //因为fgets会多读取一个换行符，所以这里需要-1
+            printf("DEBUG: GBK = %d | i = %d\n", gbk, i);
+            flag = 1;
+        }
+    }
+
+    return countNum; //返回统计出的数字，但是这里不包括多输入的换行符和'\0'
+}
+
+
+//用于拷贝字符串, 从str1拷贝到str2, 并且能手动设置拷贝长度
+char *copystr(char *str1, char *str2, int length)
+{
+    // char *pstr2;
+    int num1 = arryCounter_8bit(str1) + 2;
+    if (length <= num1)
+    {
+        num1 = length;
+    }
+    for (int i = 0; i < num1; i++)
+    {
+        *(str2 + i) = *(str1 + i);
+        // printf("DEBUG: str2[%d] = %c\n", i, *(str2 + i));
+    }
+    str2[num1] = '\0';
+    printf("str2 = %s\n", str2);
+    // char *pa = str2;
+
+    return str2; //返回str2指针，指向str2数组的第0个元素
+}
+
+
+//计算数组中所有ASCII字符和回车的总元素个数
+int arryCounter_8bit(char str[MAX])
+{
+    char *pstr;
+    int countNum = 0;
+    pstr = str; //将 指针 指向 数组
+
+    for (int i = 0, flag = 0; flag == 0;)
+    {
+        if (*(pstr + i) != '\0')
+        {
+            i++;
+        }
+        else
+        {
+            countNum = i; //因为fgets会多读取一个换行符，所以这里需要-1
+            printf("DEBUG: i = %d\n", i);
+            flag = 1;
+        }
+    }
+
+    return countNum;
+}
+
+
+//自动去除fgets()指令从输入流中多获取的一个回车
+char *filter_fgets_str(char *str)
+{
+    // char *pstr;
+    int countNum = 0;
+    // str; //将 指针 指向 数组
+
+    for (int i = 0, gbk = 0, flag = 0; flag == 0;)
+    {
+        if (*(str + i) != '\0')
+        {
+            i++;
+        }
+        else
+        {
+            countNum = i; 
+            // printf("DEBUG: i = %d\n", i);
+            flag = 1;
+        }
+    }
+
+    str[countNum - 1] = '\0';
+
+    return str;
+}
