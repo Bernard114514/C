@@ -16,6 +16,5 @@ int main()
     printf("Before exchange: x=%d, y=%d\n", x, y);
     swap(&x, &y);
     printf("After exchange, x=%d, y=%d\n", x, y);
-    getchar();
     return 0;
 }
